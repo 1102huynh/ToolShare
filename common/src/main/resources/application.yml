@@ -1,0 +1,8 @@
+toolshare:
+  environment: local
+
+logging:
+  level:
+    root: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level [%X{traceId:-no-trace}] %logger{36} - %msg%n"
