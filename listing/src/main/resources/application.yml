@@ -15,6 +15,14 @@ spring:
     locations: classpath:db/migration
 
 toolshare:
+  storage:
+    local:
+      root: ./storage
+  upload:
+    max-file-size: 5MB
+    allowed-mime-types:
+      - image/jpeg
+      - image/png
   identity:
     jwt:
       secret: ${TOOLSHARE_IDENTITY_JWT_SECRET:change-me-please-change-me-please-change-me-please}

@@ -67,6 +67,18 @@ public class ToolShareExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<ApiErrorResponse> handleValidation(ValidationException ex) {
+        ApiErrorResponse response = new ApiErrorResponse(
+                ex.getCode(),
+                ex.getMessage(),
+                TraceIdContext.currentTraceId(),
+                OffsetDateTime.now(),
+                List.of()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleResourceNotFound(ResourceNotFoundException ex) {
         ApiErrorResponse response = new ApiErrorResponse(
