@@ -10,14 +10,19 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>toolshare-availability</artifactId>
-    <name>ToolShare Availability</name>
-    <description>Availability and calendar module skeleton.</description>
+    <artifactId>toolshare-search</artifactId>
+    <name>ToolShare Search</name>
+    <description>Search and discovery module.</description>
 
     <dependencies>
         <dependency>
             <groupId>com.toolshare</groupId>
             <artifactId>toolshare-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.toolshare</groupId>
+            <artifactId>toolshare-availability</artifactId>
             <version>${project.version}</version>
         </dependency>
 

@@ -25,6 +25,11 @@
             <artifactId>toolshare-identity</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.toolshare</groupId>
+            <artifactId>toolshare-search</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

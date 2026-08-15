@@ -15,8 +15,9 @@
         <module>common</module>
         <module>identity</module>
         <module>user</module>
-        <module>listing</module>
         <module>availability</module>
+        <module>search</module>
+        <module>listing</module>
         <module>booking</module>
         <module>rental</module>
         <module>payment</module>
