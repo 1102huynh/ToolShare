@@ -47,6 +47,11 @@ class SharedInfrastructureTest {
     void validationErrorResponseHasExpectedShape() throws Exception {
         MockMvc mockMvc = mockMvc();
 
+        // T-012 note: asserts membership, not fieldErrors[0], because Hibernate
+        // Validator returns constraint violations as a Set — its iteration order is
+        // not guaranteed and was observed to shift with unrelated classpath changes
+        // elsewhere in this module (e.g. adding another @ExceptionHandler method),
+        // which made a fixed-index assertion here flaky independent of correctness.
         mockMvc.perform(post("/api/v1/test/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"bad-email\",\"name\":\"\"}"))
@@ -55,7 +60,7 @@ class SharedInfrastructureTest {
                 .andExpect(jsonPath("$.message").value("Request validation failed"))
                 .andExpect(jsonPath("$.traceId").isNotEmpty())
                 .andExpect(jsonPath("$.timestamp").isNotEmpty())
-                .andExpect(jsonPath("$.fieldErrors[0].field").value("email"));
+                .andExpect(jsonPath("$.fieldErrors[*].field", org.hamcrest.Matchers.hasItem("email")));
     }
 
     @Test

@@ -148,6 +148,25 @@ public class PaymentOrder {
         transitionTo(PaymentStatus.CANCELLED);
     }
 
+    /**
+     * T-012 addition: a guarded wrapper for {@code CAPTURED -> REFUNDED}, following
+     * the exact same shape as {@link #authorize()}/{@link #capture()}/{@link #fail()}/
+     * {@link #cancel()}. {@code PaymentStatus.canTransitionTo} already allowed this
+     * transition since T-011, but T-011 never exposed a way to drive it — the webhook
+     * path (T-012) is the first caller that needs to.
+     */
+    public void refund() {
+        transitionTo(PaymentStatus.REFUNDED);
+    }
+
+    /**
+     * T-012 addition: a guarded wrapper for {@code CAPTURED -> PARTIALLY_REFUNDED},
+     * same rationale as {@link #refund()}.
+     */
+    public void partiallyRefund() {
+        transitionTo(PaymentStatus.PARTIALLY_REFUNDED);
+    }
+
     private void transitionTo(PaymentStatus next) {
         Objects.requireNonNull(next, "next");
         if (!status.canTransitionTo(next)) {

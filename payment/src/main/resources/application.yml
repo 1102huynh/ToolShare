@@ -13,3 +13,14 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+
+# T-012: MVP webhook signature verification config. The secret below is a
+# local-dev-only placeholder (mirrors MvpPaymentProviderAdapter's own
+# "not production-ready" framing) — a real deployment would source this from a
+# secret manager instead, per ARCHITECTURE.md §14.
+toolshare:
+  payment:
+    webhook:
+      replay-tolerance: 5m
+      secrets:
+        MVP: "local-dev-only-placeholder-secret"

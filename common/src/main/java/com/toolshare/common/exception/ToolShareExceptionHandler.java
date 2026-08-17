@@ -79,6 +79,25 @@ public class ToolShareExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
+    /**
+     * T-012 addition: {@link MalformedRequestException} existed since before T-012
+     * (used by no caller yet) but was never wired to a handler, so it fell through
+     * to {@link #handleUnexpected(Exception)} as a 500 — discovered when the T-012
+     * webhook payload parser started throwing it for malformed request bodies. This
+     * mirrors {@link #handleValidation(ValidationException)}'s shape exactly.
+     */
+    @ExceptionHandler(MalformedRequestException.class)
+    public ResponseEntity<ApiErrorResponse> handleMalformedRequestException(MalformedRequestException ex) {
+        ApiErrorResponse response = new ApiErrorResponse(
+                ex.getCode(),
+                ex.getMessage(),
+                TraceIdContext.currentTraceId(),
+                OffsetDateTime.now(),
+                List.of()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleResourceNotFound(ResourceNotFoundException ex) {
         ApiErrorResponse response = new ApiErrorResponse(

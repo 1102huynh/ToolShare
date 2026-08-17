@@ -15,6 +15,7 @@ import com.toolshare.listing.domain.ListingStatus;
 import com.toolshare.listing.domain.ToolListing;
 import com.toolshare.listing.infrastructure.persistence.ToolListingRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -131,6 +132,38 @@ public class BookingService {
         applyTransition(booking::expire);
         Booking saved = bookingRepository.save(booking);
         bookingStatusHistoryRepository.save(new BookingStatusHistory(saved, previousState, saved.getState(), null, "AUTO_EXPIRED"));
+        return saved;
+    }
+
+    /**
+     * T-012 addition (plan §5): system-triggered, no-human-actor transition, called
+     * by {@code payment.application.PaymentWebhookService} when a webhook-driven
+     * {@code AUTHORIZED -> CAPTURED} payment transition is applied. Same shape as
+     * {@link #expirePendingBooking(UUID)} — {@code actorAccountId = null}, fixed
+     * {@code reason}. The only addition this task makes to {@code BookingService};
+     * every other method here is unchanged.
+     * <p>
+     * T-012 review fix: {@code REQUIRES_NEW}, not the default {@code REQUIRED}. The
+     * caller ({@code PaymentWebhookService.confirmBookingAfterCapture}) catches and
+     * swallows a failure here so the webhook can still ack 200 with the payment left
+     * CAPTURED — but catching an exception does not clear Spring's rollback-only flag
+     * on a transaction this method merely *participated* in. With the default
+     * propagation, a failure here would mark the caller's own (already-committed-in-
+     * intent) transaction rollback-only, so the outer commit would throw
+     * {@code UnexpectedRollbackException} and silently discard the payment capture
+     * and the webhook_events row along with it — the opposite of the documented
+     * behavior. {@code REQUIRES_NEW} gives this method its own physical transaction,
+     * so a failure here rolls back only its own (empty, since {@code applyTransition}
+     * throws before any save) work, leaving the caller's transaction free to commit.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Booking confirmAfterPayment(UUID bookingId) {
+        Booking booking = requireBooking(bookingId);
+
+        BookingState previousState = booking.getState();
+        applyTransition(booking::confirm);
+        Booking saved = bookingRepository.save(booking);
+        bookingStatusHistoryRepository.save(new BookingStatusHistory(saved, previousState, saved.getState(), null, "PAYMENT_CAPTURED"));
         return saved;
     }
 
