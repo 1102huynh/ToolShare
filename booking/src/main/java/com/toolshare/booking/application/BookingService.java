@@ -52,8 +52,14 @@ public class BookingService {
     ) {
         requireFutureStart(requestedStartAt);
         requireAccount(renterId, "Renter account not found");
+        Objects.requireNonNull(listingId, "listingId");
 
-        ToolListing listing = toolListingRepository.findById(Objects.requireNonNull(listingId, "listingId"))
+        // Acquire an exclusive row lock on the listing before re-checking for overlaps.
+        // This is the serialization point for booking creation: it is held for the rest
+        // of this transaction, so a concurrent createBooking call for the same listing
+        // blocks here until this transaction commits or rolls back, then re-evaluates
+        // the overlap check against whatever this transaction actually persisted.
+        ToolListing listing = toolListingRepository.findByIdForUpdate(listingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Listing not found"));
 
         if (listing.getStatus() != ListingStatus.ACTIVE) {
